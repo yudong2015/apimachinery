@@ -51,19 +51,19 @@ func CreateThreeWayJSONMergePatch(original, modified, current []byte, fns ...mer
 	if err != nil {
 		return nil, err
 	}
-	klog.Info("## addAndChangePatch: %s, addAndChangePatchObj: %v", addAndChangePatch, addAndChangePatchObj)
+	klog.Infof("## addAndChangePatch: %s, addAndChangePatchObj: %v", addAndChangePatch, addAndChangePatchObj)
 
 	deletePatch, err := jsonpatch.CreateMergePatch(original, modified)
 	if err != nil {
 		return nil, err
 	}
-	klog.Info("## deletePatch: %s", deletePatch)
+	klog.Infof("## deletePatch: %s", deletePatch)
 	// Only keep deletion
 	deletePatch, deletePatchObj, err := keepOrDeleteNullInJsonPatch(deletePatch, true)
 	if err != nil {
 		return nil, err
 	}
-	klog.Info("## deletePatch: %s, deletePatchObj: %v", deletePatch, deletePatchObj)
+	klog.Infof("## deletePatch: %s, deletePatchObj: %v", deletePatch, deletePatchObj)
 
 	hasConflicts, err := mergepatch.HasConflicts(addAndChangePatchObj, deletePatchObj)
 	if err != nil {
