@@ -21,6 +21,8 @@ import (
 	"reflect"
 
 	"github.com/evanphx/json-patch"
+	"k8s.io/klog/v2"
+
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
 )
@@ -43,21 +45,25 @@ func CreateThreeWayJSONMergePatch(original, modified, current []byte, fns ...mer
 	if err != nil {
 		return nil, err
 	}
+	klog.Info("## addAndChangePatch: %s", addAndChangePatch)
 	// Only keep addition and changes
 	addAndChangePatch, addAndChangePatchObj, err := keepOrDeleteNullInJsonPatch(addAndChangePatch, false)
 	if err != nil {
 		return nil, err
 	}
+	klog.Info("## addAndChangePatch: %s, addAndChangePatchObj: %v", addAndChangePatch, addAndChangePatchObj)
 
 	deletePatch, err := jsonpatch.CreateMergePatch(original, modified)
 	if err != nil {
 		return nil, err
 	}
+	klog.Info("## deletePatch: %s", deletePatch)
 	// Only keep deletion
 	deletePatch, deletePatchObj, err := keepOrDeleteNullInJsonPatch(deletePatch, true)
 	if err != nil {
 		return nil, err
 	}
+	klog.Info("## deletePatch: %s, deletePatchObj: %v", deletePatch, deletePatchObj)
 
 	hasConflicts, err := mergepatch.HasConflicts(addAndChangePatchObj, deletePatchObj)
 	if err != nil {
