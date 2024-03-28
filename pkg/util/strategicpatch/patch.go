@@ -22,6 +22,8 @@ import (
 	"sort"
 	"strings"
 
+	"k8s.io/klog/v2"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
@@ -183,6 +185,7 @@ func diffMaps(original, modified map[string]interface{}, schema LookupPatchMeta,
 			// Key was added, so add to patch
 			if !diffOptions.IgnoreChangesAndAdditions {
 				patch[key] = modifiedValue
+				klog.Infof("patch key: %s not exist in original.", key)
 			}
 			continue
 		}
@@ -201,6 +204,7 @@ func diffMaps(original, modified map[string]interface{}, schema LookupPatchMeta,
 			// Types have changed, so add to patch
 			if !diffOptions.IgnoreChangesAndAdditions {
 				patch[key] = modifiedValue
+				klog.Infof("patch value type of key: %s is different.", key)
 			}
 			continue
 		}
@@ -220,6 +224,7 @@ func diffMaps(original, modified map[string]interface{}, schema LookupPatchMeta,
 			return nil, err
 		}
 	}
+	klog.Infof("## patch in diffMaps: %v", patch)
 
 	updatePatchIfMissing(original, modified, patch, diffOptions)
 	// Insert the retainKeysList iff there are values present in the retainKeysList and
@@ -2041,6 +2046,7 @@ func CreateThreeWayMergePatch(original, modified, current []byte, schema LookupP
 			return nil, mergepatch.ErrBadJSONDoc
 		}
 	}
+	klog.Infof("## CreateThreeWayMergePatch original: %s, modified: %s, current: %s, schema: %+v", original, modified, current, schema)
 
 	// The patch is the difference from current to modified without deletions, plus deletions
 	// from original to modified. To find it, we compute deletions, which are the deletions from
@@ -2054,6 +2060,7 @@ func CreateThreeWayMergePatch(original, modified, current []byte, schema LookupP
 	if err != nil {
 		return nil, err
 	}
+	klog.Infof("## deltaMap: %v", deltaMap)
 	deletionsMapDiffOptions := DiffOptions{
 		SetElementOrder:           true,
 		IgnoreChangesAndAdditions: true,
@@ -2062,12 +2069,14 @@ func CreateThreeWayMergePatch(original, modified, current []byte, schema LookupP
 	if err != nil {
 		return nil, err
 	}
+	klog.Infof("## deletionsMap: %v", deletionsMap)
 
 	mergeOptions := MergeOptions{}
 	patchMap, err := mergeMap(deletionsMap, deltaMap, schema, mergeOptions)
 	if err != nil {
 		return nil, err
 	}
+	klog.Infof("## patchMap: %v", patchMap)
 
 	// Apply the preconditions to the patch, and return an error if any of them fail.
 	for _, fn := range fns {
