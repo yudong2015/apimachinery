@@ -41,7 +41,7 @@ func CreateThreeWayJSONMergePatch(original, modified, current []byte, fns ...mer
 		current = []byte(`{}`)
 	}
 
-	klog.Infof("## CreateThreeWayJSONMergePatch original: %s, modified: %s, current: 5s", original, modified, current)
+	klog.Infof("## CreateThreeWayJSONMergePatch original: %s, modified: %s, current: %s", original, modified, current)
 	addAndChangePatch, err := jsonpatch.CreateMergePatch(current, modified)
 	if err != nil {
 		return nil, err

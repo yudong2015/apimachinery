@@ -142,6 +142,7 @@ func CreateTwoWayMergeMapPatchUsingLookupPatchMeta(original, modified JSONMap, s
 	diffOptions := DiffOptions{
 		SetElementOrder: true,
 	}
+	klog.Info("## diffMaps in CreateTwoWayMergeMapPatchUsingLookupPatchMeta..")
 	patchMap, err := diffMaps(original, modified, schema, diffOptions)
 	if err != nil {
 		return nil, err
@@ -169,6 +170,7 @@ func CreateTwoWayMergeMapPatchUsingLookupPatchMeta(original, modified JSONMap, s
 // - Build $retainKeys directive for fields with retainKeys patch strategy
 func diffMaps(original, modified map[string]interface{}, schema LookupPatchMeta, diffOptions DiffOptions) (map[string]interface{}, error) {
 	patch := map[string]interface{}{}
+	klog.Infof("## diffMaps original: %v, modified: %v, diffOptions: %v", original, modified, diffOptions)
 
 	// This will be used to build the $retainKeys directive sent in the patch
 	retainKeysList := make([]interface{}, 0, len(modified))
@@ -288,6 +290,7 @@ func handleMapDiff(key string, originalValue, modifiedValue, patch map[string]in
 			patch[key] = modifiedValue
 		}
 	default:
+		klog.Info("## diffMaps in handleMapDiff..")
 		patchValue, err := diffMaps(originalValue, modifiedValue, subschema, diffOptions)
 		if err != nil {
 			return err
@@ -762,6 +765,7 @@ func diffListsOfMaps(original, modified []interface{}, schema LookupPatchMeta, m
 		switch {
 		case bothInBounds && ItemMatchesOriginalAndModifiedSlice(originalElementMergeKeyValueString, modifiedElementMergeKeyValueString):
 			// Merge key values are equal, so recurse
+			klog.Infof("## diffMaps in diffListsOfMaps..")
 			patchValue, err := diffMaps(originalElement, modifiedElement, schema, diffOptions)
 			if err != nil {
 				return nil, nil, err
@@ -2056,6 +2060,7 @@ func CreateThreeWayMergePatch(original, modified, current []byte, schema LookupP
 		IgnoreDeletions: true,
 		SetElementOrder: true,
 	}
+	klog.Info("## deltaMap by diffMaps..")
 	deltaMap, err := diffMaps(currentMap, modifiedMap, schema, deltaMapDiffOptions)
 	if err != nil {
 		return nil, err
@@ -2065,6 +2070,7 @@ func CreateThreeWayMergePatch(original, modified, current []byte, schema LookupP
 		SetElementOrder:           true,
 		IgnoreChangesAndAdditions: true,
 	}
+	klog.Info("## deletionsMap by diffMaps..")
 	deletionsMap, err := diffMaps(originalMap, modifiedMap, schema, deletionsMapDiffOptions)
 	if err != nil {
 		return nil, err
@@ -2072,6 +2078,7 @@ func CreateThreeWayMergePatch(original, modified, current []byte, schema LookupP
 	klog.Infof("## deletionsMap: %v", deletionsMap)
 
 	mergeOptions := MergeOptions{}
+	klog.Info("## patchMap by diffMaps..")
 	patchMap, err := mergeMap(deletionsMap, deltaMap, schema, mergeOptions)
 	if err != nil {
 		return nil, err
@@ -2089,6 +2096,7 @@ func CreateThreeWayMergePatch(original, modified, current []byte, schema LookupP
 	// then return a conflict error.
 	if !overwrite {
 		changeMapDiffOptions := DiffOptions{}
+		klog.Info("## changedMap by diffMaps..")
 		changedMap, err := diffMaps(originalMap, currentMap, schema, changeMapDiffOptions)
 		if err != nil {
 			return nil, err
